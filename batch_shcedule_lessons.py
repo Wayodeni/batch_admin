@@ -1,5 +1,5 @@
 ROOT_URL = 'http://schedule.miigaik.ru/api/'
-FILE_PATH = 'batch_admin/setmag_lessons.csv'
+FILE_PATH = 'setmag_lessons.csv'
 
 WEEK_TYPE_COL = 0
 
@@ -20,12 +20,25 @@ import csv
 import requests
 
 
-def get_lesson_id(lesson_name):
+def get_lesson_id(subject_object):
     query = {
-        'name': lesson_name,
+        'name': subject_object['name'],
+        'subject_type': subject_object['subject_type'],
     }
     response = requests.get(ROOT_URL + 'subject' + '/', params=query)
-    return response.json()[0]['id']
+    try:
+        return response.json()[0]['id']
+    except:
+        print('Lesson not found')
+        print(response.url)
+
+def get_subject_type_numeral(subject_type):
+    if subject_type == 'Лекция':
+        return 0
+    elif subject_type == 'Практика':
+        return 1
+    else:
+        return 'No corresponding subject type for ' + subject_type
 
 def get_group_id(group_name):
     query = {
@@ -77,10 +90,14 @@ with open(FILE_PATH, 'r') as csv_file:
                 lesson_obj['day'] = cell_value
             elif col == LESSON_NUMBER_COL:
                 lesson_obj['lesson'] = cell_value
-            elif col == LESSON_NAME_COL:
-                lesson_obj['subject'] = get_lesson_id(row[LESSON_NAME_COL])
             elif col == GROUP_NAME_COL:
                 lesson_obj['group'] = get_group_id(row[GROUP_NAME_COL])
+        lesson_obj['subject'] = get_lesson_id(
+            {
+                'name': row[LESSON_NAME_COL],
+                'subject_type': get_subject_type_numeral(row[LESSON_TYPE_COL]),
+            }
+        )
         lesson_obj['teacher'] = get_teacher_id(
             {
                 'first_name': row[TEACHER_FIRST_NAME_COL],
