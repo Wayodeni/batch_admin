@@ -20,7 +20,7 @@ def get_subject_id_by_name_and_type(subject_dict: dict[str, str]) -> (str | None
     response = requests.get(ROOT_URL + 'subject' + '/', params=query)
 
     try:
-        return response.json()[0]['id']
+        return str(response.json()[0]['id'])
     except:
         print('Subject not found: ')
         print('Subject URL: ' + response.url)
@@ -43,7 +43,7 @@ def get_group_id_by_name(group_name: str) -> (str | None):
     response = requests.get(ROOT_URL + 'student_group' + '/', params=query)
 
     try:
-        return response.json()[0]['id']
+        return str(response.json()[0]['id'])
     except:
         print('Group not found with URL:')
         print(response.url)
@@ -59,7 +59,7 @@ def get_teacher_id_by_full_name(teacher_object: dict[str, str]) -> (str | None):
     response = requests.get(ROOT_URL + 'teacher' + '/', params=query)
     
     try:
-        return response.json()[0]['id']
+        return str(response.json()[0]['id'])
     except:
         print('Teacher not found with URL:')
         print(response.url)
@@ -79,7 +79,7 @@ def create_lesson(lesson_obj:dict[str, str]) -> None:
 
 
 
-ROOT_URL = 'http://localhost:8000/api/'
+ROOT_URL = 'http://127.0.0.1:8000/api/'
 FILE_PATH = 'setmag_lessons.csv'
 
 WEEK_TYPE_NAME_COL = 0
@@ -124,8 +124,8 @@ with open(FILE_PATH, 'r', encoding='utf-8') as csv_file:
         }
 
         schedule_lesson_obj['week'] = get_week_type_id_by_name(week_type_name)
-        schedule_lesson_obj['day'] = day_id
-        schedule_lesson_obj['lesson'] = lesson_id
+        schedule_lesson_obj['day'] = day_id if int(day_id) in range(1, 8) else print('Wrong day id: ', day_id)
+        schedule_lesson_obj['lesson'] = lesson_id if int(lesson_id) in range(1, 8) else print('Wrong lesson id: ', lesson_id)
         schedule_lesson_obj['subject'] = get_subject_id_by_name_and_type({
             'name': subject_name,
             'subject_type': get_subject_type_id_by_name(subject_type_name),
