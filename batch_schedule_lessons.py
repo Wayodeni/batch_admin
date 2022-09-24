@@ -11,6 +11,7 @@ def get_week_type_id_by_name(week_type_name: str) -> (str | None):
         print('No corresponding week type id for ' + week_type_name)
         print()
 
+
 def get_subject_id_by_name_and_type(subject_dict: dict[str, str]) -> (str | None):
     query = {
         'name': subject_dict['name'],
@@ -26,6 +27,7 @@ def get_subject_id_by_name_and_type(subject_dict: dict[str, str]) -> (str | None
         print('Subject URL: ' + response.url)
         print()
 
+
 def get_subject_type_id_by_name(subject_type_name: str) -> (str | None):
     if subject_type_name == 'Лекция':
         return '0'
@@ -34,6 +36,7 @@ def get_subject_type_id_by_name(subject_type_name: str) -> (str | None):
     else:
         print('No corresponding subject type for ' + subject_type_name)
         print()
+
 
 def get_group_id_by_name(group_name: str) -> (str | None):
     query = {
@@ -48,6 +51,7 @@ def get_group_id_by_name(group_name: str) -> (str | None):
         print('Group not found with URL:')
         print(response.url)
         print()
+
 
 def get_teacher_id_by_full_name(teacher_object: dict[str, str]) -> (str | None):
     query = {
@@ -65,17 +69,19 @@ def get_teacher_id_by_full_name(teacher_object: dict[str, str]) -> (str | None):
         print(response.url)
         print()
 
+
 def create_lesson(lesson_obj:dict[str, str]) -> None:
     if all(schedule_lesson_obj.values()):
         response = requests.post(ROOT_URL + 'schedule' + '/', json=lesson_obj)
         # print('Creating: ', lesson_obj)
-        # print('Lesson creation status:', response.text)
+        # print('Lesson creation status: ', response.text)
         # print()
     else:
         print('Some schedule_lesson_obj values are empty:')
         print(schedule_lesson_obj)
         print('Discarding POST to create')
         print('=============================================')
+
 
 
 
