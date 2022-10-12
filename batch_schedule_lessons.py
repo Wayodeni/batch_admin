@@ -2,9 +2,9 @@ import csv
 import requests
 
 
-def get_weeks_ids_from_numbers(weeks_numbers: list[str]) -> (list[str] | None):
+def get_weeks_ids_from_numbers(weeks_numbers: str) -> (list[str] | None):
     weeks_ids = []
-    for week_number in weeks_numbers:
+    for week_number in weeks_numbers.split(','):
         query = {
             'number': week_number
         }
