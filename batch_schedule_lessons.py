@@ -2,14 +2,17 @@ import csv
 import requests
 
 
-def get_week_type_id_by_name(week_type_name: str) -> (str | None):
-    if week_type_name == 'верхняя':
-        return '1'
-    elif week_type_name == 'нижняя':
-        return '0'
-    else:
-        print('No corresponding week type id for ' + week_type_name)
-        print()
+def get_weeks_ids_from_numbers(weeks_numbers: list[str]) -> (list[str] | None):
+    weeks_ids = []
+    for week_number in weeks_numbers:
+        query = {
+            'number': week_number
+        }
+        
+        week_id = requests.get(ROOT_URL + 'week' + '/', params=query).json()[0]['id']
+        weeks_ids.append(week_id)
+
+    return weeks_ids
 
 
 def get_subject_id_by_name_and_type(subject_dict: dict[str, str]) -> (str | None):
@@ -73,9 +76,9 @@ def get_teacher_id_by_full_name(teacher_object: dict[str, str]) -> (str | None):
 def create_lesson(lesson_obj:dict[str, str]) -> None:
     if all(schedule_lesson_obj.values()):
         response = requests.post(ROOT_URL + 'schedule' + '/', json=lesson_obj)
-        # print('Creating: ', lesson_obj)
-        # print('Lesson creation status: ', response.text)
-        # print()
+        print('Creating: ', lesson_obj)
+        print('Lesson creation status: ', response.text)
+        print()
     else:
         print('Some schedule_lesson_obj values are empty:')
         print(schedule_lesson_obj)
@@ -85,8 +88,8 @@ def create_lesson(lesson_obj:dict[str, str]) -> None:
 
 
 
-ROOT_URL = 'http://127.0.0.1:8000/api/'
-FILE_PATH = 'setmag_lessons.csv'
+ROOT_URL = 'http://localhost:8000/api/'
+FILE_PATH = 'temp.csv'
 
 WEEK_TYPE_NAME_COL = 0
 
@@ -106,7 +109,7 @@ with open(FILE_PATH, 'r', encoding='utf-8') as csv_file:
     data = csv.reader(csv_file)
 
     for csv_row in data:
-        week_type_name = csv_row[WEEK_TYPE_NAME_COL]
+        weeks_numbers = csv_row[WEEK_TYPE_NAME_COL]
 
         day_id = csv_row[DAY_ID_COL]
 
@@ -121,7 +124,7 @@ with open(FILE_PATH, 'r', encoding='utf-8') as csv_file:
         teacher_middle_name = csv_row[TEACHER_MIDDLE_NAME_COL]
 
         schedule_lesson_obj = {
-            'week': '',
+            'weeks': '',
             'day': '',
             'lesson': '',
             'subject': '',
@@ -129,7 +132,7 @@ with open(FILE_PATH, 'r', encoding='utf-8') as csv_file:
             'teacher': '',
         }
 
-        schedule_lesson_obj['week'] = get_week_type_id_by_name(week_type_name)
+        schedule_lesson_obj['weeks'] = get_weeks_ids_from_numbers(weeks_numbers)
         schedule_lesson_obj['day'] = day_id if int(day_id) in range(1, 8) else print('Wrong day id: ', day_id)
         schedule_lesson_obj['lesson'] = lesson_id if int(lesson_id) in range(1, 8) else print('Wrong lesson id: ', lesson_id)
         schedule_lesson_obj['subject'] = get_subject_id_by_name_and_type({
