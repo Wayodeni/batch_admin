@@ -36,6 +36,8 @@ def get_subject_type_id_by_name(subject_type_name: str) -> (str | None):
         return '0'
     elif subject_type_name == 'Практика':
         return '1'
+    elif subject_type_name == 'Факультатив':
+        return '2'
     else:
         print('No corresponding subject type for ' + subject_type_name)
         print()
