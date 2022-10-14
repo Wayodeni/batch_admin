@@ -1,5 +1,27 @@
 import csv
+from urllib import request
 import requests
+
+
+ROOT_URL = 'http://localhost:8000/api/'
+FILE_PATH = 'temp.csv'
+
+WEEK_TYPE_NAME_COL = 0
+
+DAY_ID_COL = 1
+
+LESSON_ID_COL = 2
+SUBJECT_NAME_COL = 3
+SUBJECT_TYPE_NAME_COL = 4
+
+GROUP_NAME_COL = 5
+
+TEACHER_LAST_NAME_COL = 6
+TEACHER_FIRST_NAME_COL = 7
+TEACHER_MIDDLE_NAME_COL = 8
+
+SESSION = requests.session()
+SESSION.auth('login', 'pwd')
 
 
 def get_weeks_ids_from_numbers(weeks_numbers: str) -> (list[str] | None):
@@ -9,7 +31,7 @@ def get_weeks_ids_from_numbers(weeks_numbers: str) -> (list[str] | None):
             'number': week_number
         }
         
-        week_id = requests.get(ROOT_URL + 'week' + '/', params=query).json()[0]['id']
+        week_id = SESSION.get(ROOT_URL + 'week' + '/', params=query).json()[0]['id']
         weeks_ids.append(week_id)
 
     return weeks_ids
@@ -21,14 +43,15 @@ def get_subject_id_by_name_and_type(subject_dict: dict[str, str]) -> (str | None
         'subject_type': subject_dict['subject_type'],
     }
 
-    response = requests.get(ROOT_URL + 'subject' + '/', params=query)
+    response = SESSION.get(ROOT_URL + 'subject' + '/', params=query)
 
     try:
         return str(response.json()[0]['id'])
     except:
-        print('Subject not found: ')
-        print('Subject URL: ' + response.url)
-        print()
+        response = SESSION.post(ROOT_URL + 'subject' + '/', json=query)
+        SESSION.post(ROOT_URL + 'teachersubject' + '/', json={'link': subject_dict['link'], 
+            'lesson': response.json()['id']})
+        return response.json()['id']
 
 
 def get_subject_type_id_by_name(subject_type_name: str) -> (str | None):
@@ -48,14 +71,13 @@ def get_group_id_by_name(group_name: str) -> (str | None):
         'name': group_name,
     }
 
-    response = requests.get(ROOT_URL + 'student_group' + '/', params=query)
+    response = SESSION.get(ROOT_URL + 'student_group' + '/', params=query)
 
     try:
         return str(response.json()[0]['id'])
     except:
-        print('Group not found with URL:')
-        print(response.url)
-        print()
+        response = SESSION.post(ROOT_URL + 'student_group' + '/', json=query)
+        return response.json()['id']
 
 
 def get_teacher_id_by_full_name(teacher_object: dict[str, str]) -> (str | None):
@@ -65,19 +87,18 @@ def get_teacher_id_by_full_name(teacher_object: dict[str, str]) -> (str | None):
         'last_name': teacher_object['last_name'],
     }
 
-    response = requests.get(ROOT_URL + 'teacher' + '/', params=query)
+    response = SESSION.get(ROOT_URL + 'teacher' + '/', params=query)
     
     try:
         return str(response.json()[0]['id'])
     except:
-        print('Teacher not found with URL:')
-        print(response.url)
-        print()
+        response = SESSION.post(ROOT_URL + 'teacher' + '/', json=query)
+        return response.json()['id']
 
 
 def create_lesson(lesson_obj:dict[str, str]) -> None:
     if all(schedule_lesson_obj.values()):
-        response = requests.post(ROOT_URL + 'schedule' + '/', json=lesson_obj)
+        response = SESSION.post(ROOT_URL + 'schedule' + '/', json=lesson_obj)
         print('Creating: ', lesson_obj)
         print('Lesson creation status: ', response.text)
         print()
@@ -87,25 +108,6 @@ def create_lesson(lesson_obj:dict[str, str]) -> None:
         print('Discarding POST to create')
         print('=============================================')
 
-
-
-
-ROOT_URL = 'http://localhost:8000/api/'
-FILE_PATH = 'temp.csv'
-
-WEEK_TYPE_NAME_COL = 0
-
-DAY_ID_COL = 1
-
-LESSON_ID_COL = 2
-SUBJECT_NAME_COL = 3
-SUBJECT_TYPE_NAME_COL = 4
-
-GROUP_NAME_COL = 5
-
-TEACHER_LAST_NAME_COL = 6
-TEACHER_FIRST_NAME_COL = 7
-TEACHER_MIDDLE_NAME_COL = 8
 
 with open(FILE_PATH, 'r', encoding='utf-8') as csv_file:
     data = csv.reader(csv_file)
